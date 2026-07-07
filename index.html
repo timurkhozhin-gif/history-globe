@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Глобус</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <canvas id="globe-canvas"></canvas>
+
+  <div id="year-display">
+    <button class="year-btn" id="btn-prev">&#8592;</button>
+    <input id="year-input" type="number" value="2500" />
+    <span id="year-era">до н.э.</span>
+    <button class="year-btn" id="btn-next">&#8594;</button>
+    <div class="step-divider"></div>
+    <select id="step-select">
+      <option value="50">50 лет</option>
+      <option value="25">25 лет</option>
+      <option value="5">5 лет</option>
+      <option value="custom">своё</option>
+    </select>
+    <input id="step-custom" type="number" value="50" min="1" placeholder="лет" />
+  </div>
+
+  <div id="play-display">
+    <button id="btn-play">&#9654;</button>
+    <div class="step-divider"></div>
+    <select id="play-speed-select">
+      <option value="2000">медленно</option>
+      <option value="1000" selected>нормально</option>
+      <option value="400">быстро</option>
+    </select>
+  </div>
+
+  <div id="empires-toggle">
+    <label>
+      <input type="checkbox" id="show-empires" checked />
+      <span>показывать империи</span>
+    </label>
+  </div>
+
+  <div id="event-card">
+    <button id="event-close">&#10005;</button>
+    <div id="event-year"></div>
+    <div id="event-title"></div>
+    <div id="event-desc"></div>
+  </div>
+  <script src="js/libs/three.min.js"></script>
+  <script src="js/textures.js"></script>
+  <script src="js/events.js"></script>
+  <script src="js/empires.js"></script>
+  <script src="js/coastline.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
