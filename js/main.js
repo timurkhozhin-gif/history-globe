@@ -29,9 +29,8 @@ camera.position.z = 2.5;
 // ===== ЗАГРУЗКА ТЕКСТУР =====
 var loader = new THREE.TextureLoader();
 
-var earthTex  = loader.load(EARTH_DAY);
-var bumpTex   = loader.load(EARTH_BUMP);
-var nightTex  = loader.load(EARTH_NIGHT);
+var earthTex = loader.load(EARTH_DAY);
+var bumpTex  = loader.load(EARTH_BUMP);
 
 // Specular грузим с колбэком — размываем после загрузки
 var specCanvas = document.createElement('canvas');
@@ -49,74 +48,15 @@ specImg.onload = function() {
 };
 specImg.src = EARTH_SPEC;
 
-// ===== ЗЕМЛЯ — GLSL ШЕЙДЕР =====
+// ===== ЗЕМЛЯ =====
 var earthGeo = new THREE.SphereGeometry(1, 96, 96);
-
-var earthMat = new THREE.ShaderMaterial({
-  uniforms: {
-    dayTexture:    { value: earthTex },
-    nightTexture:  { value: nightTex },
-    specularMap:   { value: specTex },
-    bumpMap:       { value: bumpTex },
-    sunDirection:  { value: new THREE.Vector3(5, 3, 5).normalize() },
-  },
-  vertexShader: [
-    'varying vec2 vUv;',
-    'varying vec3 vNormal;',
-    'varying vec3 vPosition;',
-    'void main() {',
-    '  vUv = uv;',
-    '  vNormal = normalize(normalMatrix * normal);',
-    '  vPosition = (modelViewMatrix * vec4(position, 1.0)).xyz;',
-    '  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);',
-    '}'
-  ].join('\n'),
-  fragmentShader: [
-    'uniform sampler2D dayTexture;',
-    'uniform sampler2D nightTexture;',
-    'uniform sampler2D specularMap;',
-    'uniform sampler2D bumpMap;',
-    'uniform vec3 sunDirection;',
-    'varying vec2 vUv;',
-    'varying vec3 vNormal;',
-    'varying vec3 vPosition;',
-
-    'void main() {',
-    // День/ночь — вычисляем угол к солнцу
-    '  float cosAngle = dot(vNormal, sunDirection);',
-
-    // Плавный переход между днём и ночью (ширина терминатора)
-    '  float dayFactor = smoothstep(-0.1, 0.25, cosAngle);',
-
-    // Дневная текстура
-    '  vec4 dayColor   = texture2D(dayTexture, vUv);',
-
-    // Ночная текстура — огни городов
-    '  vec4 nightColor = texture2D(nightTexture, vUv);',
-    '  nightColor.rgb *= 2.0;', // усиливаем яркость огней
-
-    // Смешиваем день и ночь
-    '  vec4 earthColor = mix(nightColor, dayColor, dayFactor);',
-
-    // Освещение — диффузный свет
-    '  float diffuse = max(0.0, cosAngle);',
-    '  float ambient = 0.04;',
-    '  float light = ambient + diffuse * 0.96;',
-
-    // Блеск воды — только на освещённой стороне
-    '  float specMask = texture2D(specularMap, vUv).r;',
-    '  vec3 viewDir = normalize(-vPosition);',
-    '  vec3 halfVec = normalize(sunDirection + viewDir);',
-    '  float specAngle = max(0.0, dot(vNormal, halfVec));',
-    // Сглаженный блеск — низкий shininess для мягкого отражения
-    '  float specular = pow(specAngle, 18.0) * specMask * 0.4 * dayFactor;',
-
-    // Итоговый цвет
-    '  vec3 finalColor = earthColor.rgb * light + vec3(specular) * vec3(0.7, 0.85, 1.0);',
-
-    '  gl_FragColor = vec4(finalColor, 1.0);',
-    '}'
-  ].join('\n'),
+var earthMat = new THREE.MeshPhongMaterial({
+  map:         earthTex,
+  bumpMap:     bumpTex,
+  bumpScale:   0.06,
+  specularMap: specTex,
+  specular:    new THREE.Color(0x223344),
+  shininess:   8,
 });
 
 var earth = new THREE.Mesh(earthGeo, earthMat);
@@ -512,13 +452,6 @@ var _origAnimate = animate;
 function animate() {
   requestAnimationFrame(animate);
   var t = Date.now() * 0.002;
-
-  // Обновляем направление солнца в шейдере с учётом вращения земли
-  var sunWorld = new THREE.Vector3(5, 3, 5).normalize();
-  var sunLocal = sunWorld.clone().applyEuler(
-    new THREE.Euler(-earth.rotation.x, -earth.rotation.y, -earth.rotation.z, 'XYZ')
-  );
-  earthMat.uniforms.sunDirection.value = sunLocal;
 
   // Fade империй
   empireMeshes.forEach(function(m) {
