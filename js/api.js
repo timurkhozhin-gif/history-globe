@@ -3,7 +3,7 @@
 // Для перехода на backend — меняем только этот файл,
 // остальной код не трогаем.
 
-var API_MODE = 'remote'; // 'local' | 'remote'
+var API_MODE = 'local'; // 'local' | 'remote'
 var API_BASE_URL = '/api'; // URL backend когда будет
 
 var DataAPI = {
